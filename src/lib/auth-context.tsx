@@ -11,7 +11,7 @@ interface AuthContextValue {
   user: User | null
   profile: Profile | null
   loading: boolean
-  signInWithOtp: (email: string) => Promise<{ error: string | null }>
+  signInWithPassword: (email: string, password: string) => Promise<{ error: string | null }>
   signOut: () => Promise<void>
 }
 
@@ -36,11 +36,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const { profile } = useFetchProfile(session?.user?.id)
 
-  const signInWithOtp = React.useCallback(async (email: string) => {
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: window.location.origin },
-    })
+  const signInWithPassword = React.useCallback(async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
     return { error: error?.message ?? null }
   }, [])
 
@@ -54,10 +51,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       user: session?.user ?? null,
       profile,
       loading,
-      signInWithOtp,
+      signInWithPassword,
       signOut,
     }),
-    [session, profile, loading, signInWithOtp, signOut]
+    [session, profile, loading, signInWithPassword, signOut]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
