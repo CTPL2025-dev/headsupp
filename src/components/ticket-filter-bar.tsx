@@ -1,7 +1,8 @@
+import * as React from "react"
 import { IconFilter, IconSearch, IconUserCircle, IconX } from "@tabler/icons-react"
 
 import { Button } from "@/components/ui/button"
-import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group"
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -50,17 +51,37 @@ export function TicketFilterBar({
     onChange({ ...filters, [key]: value })
   }
 
+  // Search is a deliberate, explicit action (Enter / button click) rather
+  // than firing a query on every keystroke, so a draft is kept separate
+  // from the committed `filters.search` value.
+  const [searchDraft, setSearchDraft] = React.useState(filters.search ?? "")
+  const [trackedSearch, setTrackedSearch] = React.useState(filters.search ?? "")
+  if ((filters.search ?? "") !== trackedSearch) {
+    setTrackedSearch(filters.search ?? "")
+    setSearchDraft(filters.search ?? "")
+  }
+
+  function commitSearch() {
+    set("search", searchDraft.trim() || undefined)
+  }
+
   return (
     <div className="flex flex-wrap items-center gap-2 border-b px-6 py-3">
-      <InputGroup className="h-8 w-48">
+      <InputGroup className="h-8 w-56">
         <InputGroupAddon>
           <IconSearch className="size-3.5" />
         </InputGroupAddon>
         <InputGroupInput
-          value={filters.route ?? ""}
-          onChange={(e) => set("route", e.target.value || undefined)}
-          placeholder="Search route…"
+          value={searchDraft}
+          onChange={(e) => setSearchDraft(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && commitSearch()}
+          placeholder="Search title or route…"
         />
+        <InputGroupAddon align="inline-end">
+          <InputGroupButton aria-label="Search" onClick={commitSearch}>
+            <IconSearch className="size-3.5" />
+          </InputGroupButton>
+        </InputGroupAddon>
       </InputGroup>
 
       <Select

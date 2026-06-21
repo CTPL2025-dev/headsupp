@@ -8,7 +8,7 @@ export type TicketFilters = {
   status?: TicketStatus
   severity?: TicketSeverity
   priority?: TicketPriority
-  route?: string
+  search?: string
   reporterEmail?: string
   dateFrom?: string
   dateTo?: string
@@ -81,7 +81,11 @@ export const TicketsAPI = {
     if (filters.status) query = query.eq("status", filters.status)
     if (filters.severity) query = query.eq("severity", filters.severity)
     if (filters.priority) query = query.eq("priority", filters.priority)
-    if (filters.route) query = query.ilike("route", `%${filters.route}%`)
+    if (filters.search) {
+      // Strip characters that would break PostgREST's comma-separated `.or()` filter syntax.
+      const term = filters.search.replace(/[,()]/g, "").trim()
+      if (term) query = query.or(`route.ilike.%${term}%,what_went_wrong.ilike.%${term}%`)
+    }
     if (filters.reporterEmail) query = query.ilike("reporter_email", `%${filters.reporterEmail}%`)
     if (filters.dateFrom) query = query.gte("created_at", filters.dateFrom)
     if (filters.dateTo) query = query.lte("created_at", filters.dateTo)
