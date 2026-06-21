@@ -1,20 +1,31 @@
-import { Button } from "@/components/ui/button"
+import { Navigate, Route, Routes } from "react-router-dom"
+
+import { AppShell } from "@/components/app-shell"
+import { ProtectedRoute } from "@/components/protected-route"
+import { LoginPage } from "@/pages/login-page"
+import { BoardPage } from "@/pages/board-page"
+import { ListPage } from "@/pages/list-page"
+import { AnalyticsPage } from "@/pages/analytics-page"
+import { TicketDetailSheet } from "@/pages/ticket-detail-sheet"
 
 export function App() {
   return (
-    <div className="flex min-h-svh p-6">
-      <div className="flex max-w-md min-w-0 flex-col gap-4 text-sm leading-loose">
-        <div>
-          <h1 className="font-medium">Project ready!</h1>
-          <p>You may now add components and start building.</p>
-          <p>We&apos;ve already added the button component for you.</p>
-          <Button className="mt-2">Button</Button>
-        </div>
-        <div className="font-mono text-xs text-muted-foreground">
-          (Press <kbd>d</kbd> to toggle dark mode)
-        </div>
-      </div>
-    </div>
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route element={<ProtectedRoute />}>
+        <Route element={<AppShell />}>
+          <Route index element={<Navigate to="/board" replace />} />
+          <Route path="board" element={<BoardPage />}>
+            <Route path=":ticketId" element={<TicketDetailSheet />} />
+          </Route>
+          <Route path="list" element={<ListPage />}>
+            <Route path=":ticketId" element={<TicketDetailSheet />} />
+          </Route>
+          <Route path="analytics" element={<AnalyticsPage />} />
+        </Route>
+      </Route>
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   )
 }
 
